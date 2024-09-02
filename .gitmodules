@@ -22,3 +22,15 @@
 [submodule "ips/pulp_rv_plic"]
 	path = ips/pulp_rv_plic
 	url = https://github.com/pulp-platform/rv_plic.git
+[submodule "ips/tlp-ss/ips/apb_gpio"]
+	path = ips/tlp-ss/ips/apb_gpio
+	url = https://github.com/pulp-platform/apb_gpio.git
+[submodule "ips/tlp-ss/ips/apb_spi_master"]
+	path = ips/tlp-ss/ips/apb_spi_master
+	url = https://github.com/pulp-platform/apb_spi_master.git
+[submodule "ips/tlp-ss/ips/axi_spi_master"]
+	path = ips/tlp-ss/ips/axi_spi_master
+	url = https://github.com/pulp-platform/axi_spi_master.git
+[submodule "ips/tlp-ss/ips/apb_node"]
+	path = ips/tlp-ss/ips/apb_node
+	url = https://github.com/pulp-platform/apb_node.git
