@@ -34,3 +34,6 @@
 [submodule "ips/tlp-ss/ips/apb_node"]
 	path = ips/tlp-ss/ips/apb_node
 	url = https://github.com/pulp-platform/apb_node.git
+[submodule "ips/bow_common_ips/ips/axi"]
+	path = ips/bow_common_ips/ips/axi
+	url = https://github.com/pulp-platform/axi.git
