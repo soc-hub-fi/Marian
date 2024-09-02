@@ -37,3 +37,18 @@
 [submodule "ips/bow_common_ips/ips/axi"]
 	path = ips/bow_common_ips/ips/axi
 	url = https://github.com/pulp-platform/axi.git
+[submodule "ips/bow_common_ips/ips/pulp-common-cells"]
+	path = ips/bow_common_ips/ips/pulp-common-cells
+	url = https://github.com/pulp-platform/common_cells.git
+[submodule "ips/bow_common_ips/ips/tech_cells_generic"]
+	path = ips/bow_common_ips/ips/tech_cells_generic
+	url = https://github.com/pulp-platform/tech_cells_generic.git
+[submodule "ips/bow_common_ips/ips/common_verification"]
+	path = ips/bow_common_ips/ips/common_verification
+	url = https://github.com/pulp-platform/common_verification.git
+[submodule "ips/tlp-ss/ips/axi_spi_slave"]
+	path = ips/tlp-ss/ips/axi_spi_slave
+	url = https://github.com/pulp-platform/axi_spi_slave.git
+[submodule "ips/tlp-ss/ips/axi_slice_dc"]
+	path = ips/tlp-ss/ips/axi_slice_dc
+	url = https://github.com/pulp-platform/axi_slice_dc.git
