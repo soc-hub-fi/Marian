@@ -26,8 +26,6 @@
 
 The Vector Crypto Subsystem extends v3.0 of the Pulp RISC-V vector processor [Ara](https://github.com/pulp-platform/ara) to support Version 1.0.0 of the [RISC-V Vector Cryptography Extension](https://github.com/riscv/riscv-crypto) (Zvk).
 
-All documentation will be hosted on pages: https://soc-hub.gitlab-pages.tuni.fi/vector-crypto-ss
-
 ![High-Level Architecture of Marian IP](doc/figures/marian_ip.png "Marian Subsystem")
 
 ## Getting Started
@@ -177,51 +175,4 @@ Note that a detailed memory map for each component in Marian can be found in [co
 |        GPIO                |  5 |
 |    External IRQ            |  6 |
 
-## Git Guidance
-
-### Development and Merge Operations
-
-Project development should be done via feature branches. Merge branches to main often. For fluent merge housekeeping do following. From settings -> Merge requests:
-
-* Enable "delete source branch" option by default: Yes (checkmark the box)
-
-* Squash commits when merging: Encourage or Require. This will clean up main branch history by huge amount.
-
-* Merge checks: Pipelines must succeed: Yes
-
-* Merge checks: Skipped pipelines are considered successfull: No
-
-* Merge checks: All threads must be resolved: Yes
-
-Merges should be **always** reviewed and accepted by another developer.
-
-### Documentation
-
-After setting up repo to run CI, replace **ss-template** with your repo path, generally follows pattern: chip/type/module. Alternatively you can find it from: deploy-> pages.
-
-Additionally, check settings -> general: pages is enabled with option "Only Project Members"
-
-### Repository pipeline settings
-
-To ensure issueless operation for CI, ensure that settings -> CI/CD has following settings:
-
-#### General pipelines
-
-* Auto-cancel redundant pipelines: Yes 
-
-* Git strategy: git clone
-
-* Git shallow clone: 1
-
-#### Runners 
-
-* Available group runner: tie-sochub-gitlabrunner-ci (if missing contact matti.kayra@tuni.fi and/or arto.oinonen@tuni.fi) 
-
-#### Token Access
-
-* Limit access: No (it would prevent hiearchical repository access in CI)
-
-### Pipeline status
-
-Like with the pages, Change **common/ss-template** as you repo path to see pipeline status images as part of this header readme. 
 

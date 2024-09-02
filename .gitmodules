@@ -1,0 +1,24 @@
+[submodule "ips/pulp_apb"]
+	path = ips/pulp_apb
+	url = https://github.com/pulp-platform/apb
+[submodule "ips/pulp_apb_timer"]
+	path = ips/pulp_apb_timer
+	url = https://github.com/pulp-platform/apb_timer.git
+[submodule "ips/pulp_apb_uart"]
+	path = ips/pulp_apb_uart
+	url = https://github.com/pulp-platform/apb_uart_sv
+[submodule "ips/pulp_ara"]
+	path = ips/pulp_ara
+	url = https://github.com/pulp-platform/ara.git
+[submodule "ips/pulp_cva6"]
+	path = ips/pulp_cva6
+	url = https://github.com/pulp-platform/cva6.git
+[submodule "ips/pulp_reg_if"]
+	path = ips/pulp_reg_if
+	url = https://github.com/pulp-platform/register_interface.git
+[submodule "ips/pulp_rv_dbg"]
+	path = ips/pulp_rv_dbg
+	url = https://github.com/pulp-platform/riscv-dbg.git
+[submodule "ips/pulp_rv_plic"]
+	path = ips/pulp_rv_plic
+	url = https://github.com/pulp-platform/rv_plic.git
