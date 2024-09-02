@@ -1,10 +1,3 @@
-
-Pipeline status: [![pipeline status](https://gitlab.tuni.fi/soc-hub/bow/hw/vector-crypto-ss/badges/main/pipeline.svg)](https://gitlab.tuni.fi/soc-hub/ss-template/-/commits/main) 
-
-Coverage: [![pipeline status](https://gitlab.tuni.fi/soc-hub/bow/hw/vector-crypto-ss/badges/main/pipeline.svg)](https://gitlab.tuni.fi/ss-template/-/commits/main) 
-
-Latest release:  [![Latest Release](https://gitlab.tuni.fi/soc-hub/bow/hw/vector-crypto-ss/-/badges/release.svg)](https://gitlab.tuni.fi/soc-hub/ss-template/-/releases) 
-
 # Vector-Crypto Subsystem (Marian) for Bow SoC
 
 ## Contents
