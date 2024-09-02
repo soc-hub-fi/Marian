@@ -1,0 +1,3 @@
+log -r /*
+
+run -all

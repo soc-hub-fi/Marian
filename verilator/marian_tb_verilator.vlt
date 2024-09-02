@@ -1,0 +1,14 @@
+`verilator_config
+
+// Hierarchical verilation
+hier_block -module "lane"
+
+// Hierarchical modules will be renamed by Verilator. Disable the DECLFILENAME
+// check for those right away
+lint_off -rule DECLFILENAME -file "*" -match "*lane*"
+
+// Ignore missing pins on Ariane
+lint_off -rule PINMISSING -file "*/pulp_cva6/*" -match "*"
+
+// Ignore usage of reserved words on Ariane
+lint_off -rule SYMRSVDWORD -file "*/pulp_cva6/*" -match "*"

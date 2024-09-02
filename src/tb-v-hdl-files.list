@@ -1,0 +1,60 @@
+## Verification file list
+
+# packages
+../ips/bow_common_ips/ips/pulp-common-cells/src/cb_filter_pkg.sv
+../ips/bow_common_ips/ips/pulp-common-cells/src/cf_math_pkg.sv
+../ips/bow_common_ips/ips/pulp-common-cells/src/ecc_pkg.sv
+../ips/pulp_apb/src/apb_pkg.sv
+../ips/bow_common_ips/ips/axi/src/axi_pkg.sv
+../ips/bow_common_ips/ips/common_verification/src/rand_id_queue.sv
+../ips/bow_common_ips/ips/axi/src/axi_test.sv
+../src/ip/include/riscv_pkg.sv
+../ips/pulp_rv_dbg/src/dm_pkg.sv
+../ips/pulp_cva6/src/fpu/src/fpnew_pkg.sv
+../ips/pulp_cva6/include/ariane_pkg.sv
+../ips/pulp_cva6/include/std_cache_pkg.sv
+../ips/pulp_cva6/include/wt_cache_pkg.sv
+../src/ip/include/rvv_pkg.sv
+../src/ip/include/ara_pkg.sv
+../src/tb/include/marian_tb_pkg.sv
+../src/ip/include/marian_pkg.sv
+../ips/pulp_cva6/include/instr_tracer_pkg.sv
+../src/tb/include/marian_jtag_pkg.sv
+../src/tb/include/crypto_unit_tb_pkg.sv
+
+# file list for TB components from CVA6
+../ips/pulp_cva6/tb/common/uart.sv
+../ips/pulp_cva6/tb/common/mock_uart.sv
+../ips/pulp_cva6/src/util/instr_tracer.sv
+../ips/pulp_cva6/src/util/instr_tracer_if.sv
+
+# pulp ara TB components
+../ips/pulp_ara/hardware/src/accel_dispatcher_ideal.sv
+
+# file list for marian testbench v/sv sources
+../src/tb/marian_tb.sv
+../src/ip/crypto/aes/tb/canright_sbox_tb.sv
+
+# file list for axi_spi_slave
+../ips/tlp-ss/ips/axi_spi_slave/axi_spi_slave.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_axi_plug.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_cmd_parser.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_controller.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_dc_fifo.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_regs.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_rx.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_syncro.sv
+../ips/tlp-ss/ips/axi_spi_slave/spi_slave_tx.sv
+../ips/tlp-ss/ips/axi_slice_dc/src/dc_token_ring_fifo_din.v
+../ips/tlp-ss/ips/axi_slice_dc/src/dc_token_ring_fifo_dout.v
+../ips/tlp-ss/ips/axi_slice_dc/src/dc_token_ring.v
+../ips/tlp-ss/ips/axi_slice_dc/src/dc_synchronizer.v
+../ips/tlp-ss/ips/axi_slice_dc/src/dc_data_buffer.sv
+../ips/tlp-ss/ips/axi_slice_dc/src/dc_full_detector.v
+../src/tb/crypto_if.sv
+../src/tb/crypto_unit_tb.sv
+../src/tb/crypto_unit_sm_tb.sv
+../src/ip/crypto/aes/tb/canright_sbox_tb.sv
+
+# uart printing
+../ips/pulp_cva6/tb/common/uart.sv

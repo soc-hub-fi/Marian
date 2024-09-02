@@ -1,0 +1,14 @@
+work/
+*_output/
+*.log
+.visualizer/
+modelsim.ini
+build/
+*.vstf
+*.wlf
+**/transcript
+**/sw/tmp
+**/sw/obj
+**/sw/dump
+**/sw/bin
+**/*genus*
