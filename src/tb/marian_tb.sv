@@ -23,6 +23,8 @@
 // Revision History:
 //  - Version 1.0: Initial release
 //  - Version 1.1: Added GPIO loopback [TZS:20-jul-2024]
+//  - Version 1.2: Updated to use marian_top rather than wrapper
+//                 [TZS:18-sep-2024]
 //
 //------------------------------------------------------------------------------
 
@@ -74,54 +76,6 @@ module marian_tb;
   localparam integer AXI_ID_WIDTH       = 9;
   localparam integer AXI_USER_WIDTH     = 1;
 
-  localparam integer AXI_LOG_DEPTH = 2;
-  localparam integer AXI_AW_DATA_SIZE = AXI_ID_WIDTH
-                                      + AXI_ADDR_WIDTH
-                                      + 8 // len
-                                      + 3 // size
-                                      + 2 // burst
-                                      + 1 // lock
-                                      + 4 // cache
-                                      + 3 // prot
-                                      + 4 // qos
-                                      + 4 // region
-                                      + 6 // atop
-                                      + AXI_USER_WIDTH;
-  localparam integer AXI_AR_DATA_SIZE = AXI_ID_WIDTH
-                                      + AXI_ADDR_WIDTH
-                                      + 8 // len
-                                      + 3 // size
-                                      + 2 // burst
-                                      + 1 // lock
-                                      + 4 // cache
-                                      + 3 // prot
-                                      + 4 // qos
-                                      + 4 // region
-                                      + AXI_USER_WIDTH;
-  localparam integer AXI_W_DATA_SIZE = DUT_AXI_DATA_WIDTH
-                                     + (DUT_AXI_DATA_WIDTH/8) // strb
-                                     + 1 // last
-                                     + AXI_USER_WIDTH;
-  localparam integer AXI_R_DATA_SIZE = DUT_AXI_DATA_WIDTH
-                                     + AXI_ID_WIDTH
-                                     + 2 // resp
-                                     + 1 // last
-                                     + AXI_USER_WIDTH;
-  localparam integer AXI_B_DATA_SIZE = AXI_ID_WIDTH
-                                     + 2 // resp
-                                     + AXI_USER_WIDTH;
-  localparam integer DST_AW_DATA_SIZE = AXI_AW_DATA_SIZE; // same as for 64-bit
-  localparam integer DST_AR_DATA_SIZE = AXI_AR_DATA_SIZE; // same as for 64-bit
-  localparam integer DST_W_DATA_SIZE = AXI_DATA_WIDTH
-                                     + (AXI_DATA_WIDTH/8) // strb
-                                     + 1 // last
-                                     + AXI_USER_WIDTH;
-  localparam integer DST_R_DATA_SIZE = AXI_DATA_WIDTH
-                                     + AXI_ID_WIDTH
-                                     + 2 // resp
-                                     + 1 // last
-                                     + AXI_USER_WIDTH;
-  localparam integer DST_B_DATA_SIZE = AXI_B_DATA_SIZE; // same as for 64-bit
 /*************
  *  Signals  *
  *************/
@@ -147,6 +101,12 @@ module marian_tb;
   logic [3:0] marian_qspi_oe;
   logic       marian_qspi_sclk_o;
 
+  logic [1:0] gpio_out_s;
+  logic [1:0] gpio_in_s;
+
+  logic uart_tx_s;
+  logic uart_rx_s;
+
   // tb mgmt signals
   logic [AxiNarrowDataWidth-1:0] exit_s;
 
@@ -162,6 +122,13 @@ module marian_tb;
   int                      dm_test_err_count;
   logic                    dm_test_err;
 
+  //external AXI M & AXI S
+  // AXI DV master -> Marian Slave
+  axi_external_m_req_t  axi_dv_m_req;
+  axi_external_m_resp_t axi_dv_m_resp;
+  // Marian Master -> AXI DV Slave
+  axi_external_s_req_t  axi_dv_s_req;
+  axi_external_s_resp_t axi_dv_s_resp;
 
 /*************************************
 *  TB Init + Clock/Reset Generation  *
@@ -242,14 +209,6 @@ module marian_tb;
  *  AXI  *
  *********/
 
- //external AXI M & AXI S
- // AXI DV master -> Marian Slave
- axi_dv_m_resp_t axi_dv_m_resp_i;
- axi_dv_m_req_t  axi_dv_m_req_o;
- // Marian Master -> AXI DV Slave
- axi_dv_s_resp_t axi_dv_s_resp_o;
- axi_dv_s_req_t  axi_dv_s_req_i;
-
 //AXI Master Port
  AXI_BUS_DV #(
     .AXI_ADDR_WIDTH( AXI_DV_ADDR_WIDTH ),
@@ -276,19 +235,13 @@ module marian_tb;
   // Stimuli application and test time
   .TA (500ps),
   .TT (500ps)
-  // Maximum number of read and write transactions in flight
-  //.MAX_READ_TXNS  ( 8 ),
-  //.MAX_WRITE_TXNS ( 8 ),
-  //.AXI_EXCLS      (   ),
-  //.AXI_ATOPS      (   ),
-  //.UNIQUE_IDS     (   )
   ) axi_drv_mst_t;
   axi_drv_mst_t axi_drv_mst = new (master_dv);
 
   // connect dv master axi bus to the dut ports
-  `AXI_ASSIGN           (master,         master_dv      )
-  `AXI_ASSIGN_TO_REQ    (axi_dv_m_req_o, master         )
-  `AXI_ASSIGN_FROM_RESP (master,         axi_dv_m_resp_i)
+  `AXI_ASSIGN           (master,         master_dv     )
+  `AXI_ASSIGN_TO_REQ    (axi_dv_m_req,   master        )
+  `AXI_ASSIGN_FROM_RESP (master,         axi_dv_m_resp )
 
   //Axi slave port
   AXI_BUS_DV #(
@@ -318,8 +271,8 @@ module marian_tb;
 
   // connect dv slave axi bus to the dut ports
   `AXI_ASSIGN          (slave_dv,        slave         )
-  `AXI_ASSIGN_FROM_REQ (slave,           axi_dv_s_req_i)
-  `AXI_ASSIGN_TO_RESP  (axi_dv_s_resp_o, slave         )
+  `AXI_ASSIGN_FROM_REQ (slave,           axi_dv_s_req)
+  `AXI_ASSIGN_TO_RESP  (axi_dv_s_resp, slave         )
 
 
 /*********
@@ -376,7 +329,7 @@ axi_test::axi_rand_slave #(
       .spi_sdo1 (marian_qspi_data_i[1]),
       .spi_sdo2 (marian_qspi_data_i[2]),
       .spi_sdo3 (marian_qspi_data_i[3]),
-   
+
        // AXI4 MASTER
        //***************************************
        .axi_aclk           (tb_clk ),
@@ -395,7 +348,7 @@ axi_test::axi_rand_slave #(
        .axi_master_aw_id   (spi_dv_m_req.aw.id     ),
        .axi_master_aw_user (spi_dv_m_req.aw.user   ),
        .axi_master_aw_ready(spi_dv_m_resp.aw_ready  ),
-   
+
        // READ ADDRESS CHANNEL
        .axi_master_ar_valid (spi_dv_m_req.ar_valid ),
        .axi_master_ar_addr  (spi_dv_m_req.ar.addr  ),
@@ -410,7 +363,7 @@ axi_test::axi_rand_slave #(
        .axi_master_ar_id    (spi_dv_m_req.ar.id    ),
        .axi_master_ar_user  (spi_dv_m_req.ar.user  ),
        .axi_master_ar_ready (spi_dv_m_resp.ar_ready ),
-   
+
        // WRITE DATA CHANNEL
        .axi_master_w_valid(spi_dv_m_req.w_valid),
        .axi_master_w_data (spi_dv_m_req.w.data ),
@@ -418,7 +371,7 @@ axi_test::axi_rand_slave #(
        .axi_master_w_user (spi_dv_m_req.w.user ),
        .axi_master_w_last (spi_dv_m_req.w.last ),
        .axi_master_w_ready(spi_dv_m_resp.w_ready),
-   
+
        // READ DATA CHANNEL
        .axi_master_r_valid(spi_dv_m_resp.r_valid),
        .axi_master_r_data (spi_dv_m_resp.r.data ),
@@ -427,7 +380,7 @@ axi_test::axi_rand_slave #(
        .axi_master_r_id   (spi_dv_m_resp.r.id   ),
        .axi_master_r_user (spi_dv_m_resp.r.user ),
        .axi_master_r_ready(spi_dv_m_req.r_ready),
-   
+
        // WRITE RESPONSE CHANNEL
        .axi_master_b_valid(spi_dv_m_resp.b_valid),
        .axi_master_b_resp (spi_dv_m_resp.b.resp ),
@@ -476,315 +429,44 @@ axi_test::axi_rand_slave #(
 /*********
  *  DUT  *
  *********/
-  // cdc_src -> wrapper
-  logic [76:0] marian_axi_s_aw_data_src2dst;
-  logic [1:0]  marian_axi_s_aw_rd_data_ptr_dst2src;
-  logic [2:0]  marian_axi_s_aw_rd_ptr_gray_dst2src;
-  logic [2:0]  marian_axi_s_aw_aw_wr_ptr_gray_src2dst;
-  logic [70:0] marian_axi_s_ar_data_src2dst;
-  logic [1:0]  marian_axi_s_ar_rd_data_ptr_dst2src;
-  logic [2:0]  marian_axi_s_ar_rd_ptr_gray_dst2src;
-  logic [2:0]  marian_axi_s_ar_wr_ptr_gray_src2dst;
-  logic [73:0] marian_axi_s_w_data_src2dst;
-  logic [1:0]  marian_axi_s_w_rd_data_ptr_dst2src;
-  logic [2:0]  marian_axi_s_w_rd_ptr_gray_dst2src;
-  logic [2:0]  marian_axi_s_w_wr_ptr_gray_src2dst;
-  logic [76:0] marian_axi_s_r_data_dst2src;
-  logic [1:0]  marian_axi_s_r_rd_data_ptr_src2dst;
-  logic [2:0]  marian_axi_s_r_rd_ptr_gray_src2dst;
-  logic [2:0]  marian_axi_s_r_wr_ptr_gray_dst2src;
-  logic [11:0] marian_axi_s_b_data_dst2src;
-  logic [1:0]  marian_axi_s_b_rd_data_ptr_src2dst;
-  logic [2:0]  marian_axi_s_b_rd_ptr_gray_src2dst;
-  logic [2:0]  marian_axi_s_b_wr_ptr_gray_dst2src;
-  // wrapper -> cdc_dst
-  logic [70:0] marian_axi_m_ar_data_src2dst;
-  logic [2:0]  marian_axi_m_ar_wr_ptr_gray_src2dst;
-  logic [76:0] marian_axi_m_aw_data_src2dst;
-  logic [2:0]  marian_axi_m_aw_wr_ptr_gray_src2dst;
-  logic [1:0]  marian_axi_m_b_rd_data_ptr_src2dst;
-  logic [2:0]  marian_axi_m_b_rd_ptr_gray_src2dst;
-  logic [1:0]  marian_axi_m_r_rd_data_ptr_src2dst;
-  logic [2:0]  marian_axi_m_r_rd_ptr_gray_src2dst;
-  logic [73:0] marian_axi_m_w_data_src2dst;
-  logic [2:0]  marian_axi_m_w_wr_ptr_gray_src2dst;
-  logic [1:0]  marian_axi_m_ar_rd_data_ptr_dst2src;
-  logic [2:0]  marian_axi_m_ar_rd_ptr_gray_dst2src;
-  logic [1:0]  marian_axi_m_aw_rd_data_ptr_dst2src;
-  logic [2:0]  marian_axi_m_aw_rd_ptr_gray_dst2src;
-  logic [11:0] marian_axi_m_b_data_dst2src;
-  logic [2:0]  marian_axi_m_b_wr_ptr_gray_dst2src;
-  logic [76:0] marian_axi_m_r_data_dst2src;
-  logic [2:0]  marian_axi_m_r_wr_ptr_gray_dst2src;
-  logic [1:0]  marian_axi_m_w_rd_data_ptr_dst2src;
-  logic [2:0]  marian_axi_m_w_rd_ptr_gray_dst2src;
-
-  logic [1:0] gpio_out_s;
-  logic [1:0] gpio_in_s;
 
   // Loop back GPIO for testing
   assign gpio_in_s = {gpio_out_s[0],gpio_out_s[1]};
 
-  axi_cdc_split_intf_src #(
-    .AXI_ID_WIDTH  ( AXI_ID_WIDTH     ),
-    .AXI_ADDR_WIDTH( AXI_ADDR_WIDTH   ),
-    .AXI_DATA_WIDTH( AXI_DATA_WIDTH   ),
-    .AXI_USER_WIDTH( AXI_USER_WIDTH   ),
-    .LOG_DEPTH     ( AXI_LOG_DEPTH    ),
-    .AW_DATA_SIZE  ( AXI_AW_DATA_SIZE ),
-    .AR_DATA_SIZE  ( AXI_AR_DATA_SIZE ),
-    .W_DATA_SIZE   ( AXI_W_DATA_SIZE  ),
-    .R_DATA_SIZE   ( AXI_R_DATA_SIZE  ),
-    .B_DATA_SIZE   ( AXI_B_DATA_SIZE  )
-  ) i_axi_slave_cdc_split_intf_src (
-    .src_clk_i  ( tb_clk  ),
-    .src_rst_ni ( tb_rstn ),
-    .icn_rst_ni ( tb_rstn ),
-
-    .aw_id     ( axi_dv_m_req_o.aw.id     ),
-    .aw_addr   ( axi_dv_m_req_o.aw.addr   ),
-    .aw_len    ( axi_dv_m_req_o.aw.len    ),
-    .aw_size   ( axi_dv_m_req_o.aw.size   ),
-    .aw_burst  ( axi_dv_m_req_o.aw.burst  ),
-    .aw_lock   ( axi_dv_m_req_o.aw.lock   ),
-    .aw_cache  ( axi_dv_m_req_o.aw.cache  ),
-    .aw_prot   ( axi_dv_m_req_o.aw.prot   ),
-    .aw_qos    ( axi_dv_m_req_o.aw.qos    ),
-    .aw_region ( axi_dv_m_req_o.aw.region ),
-    .aw_atop   ( axi_dv_m_req_o.aw.atop   ),
-    .aw_user   ( axi_dv_m_req_o.aw.user   ),
-    .aw_valid  ( axi_dv_m_req_o.aw_valid  ),
-    .aw_ready  ( axi_dv_m_resp_i.aw_ready ),
-
-    .w_data    ( axi_dv_m_req_o.w.data    ),
-    .w_strb    ( axi_dv_m_req_o.w.strb    ),
-    .w_last    ( axi_dv_m_req_o.w.last    ),
-    .w_user    ( axi_dv_m_req_o.w.user    ),
-    .w_valid   ( axi_dv_m_req_o.w_valid   ),
-    .w_ready   ( axi_dv_m_resp_i.w_ready  ),
-
-    .b_id      ( axi_dv_m_resp_i.b.id     ),
-    .b_resp    ( axi_dv_m_resp_i.b.resp   ),
-    .b_user    ( axi_dv_m_resp_i.b.user   ),
-    .b_valid   ( axi_dv_m_resp_i.b_valid  ),
-    .b_ready   ( axi_dv_m_req_o.b_ready   ),
-
-    .ar_id     ( axi_dv_m_req_o.ar.id     ),
-    .ar_addr   ( axi_dv_m_req_o.ar.addr   ),
-    .ar_len    ( axi_dv_m_req_o.ar.len    ),
-    .ar_size   ( axi_dv_m_req_o.ar.size   ),
-    .ar_burst  ( axi_dv_m_req_o.ar.burst  ),
-    .ar_lock   ( axi_dv_m_req_o.ar.lock   ),
-    .ar_cache  ( axi_dv_m_req_o.ar.cache  ),
-    .ar_prot   ( axi_dv_m_req_o.ar.prot   ),
-    .ar_qos    ( axi_dv_m_req_o.ar.qos    ),
-    .ar_region ( axi_dv_m_req_o.ar.region ),
-    .ar_user   ( axi_dv_m_req_o.ar.user   ),
-    .ar_valid  ( axi_dv_m_req_o.ar_valid  ),
-    .ar_ready  ( axi_dv_m_resp_i.ar_ready ),
-
-    .r_id      ( axi_dv_m_resp_i.r.id     ),
-    .r_data    ( axi_dv_m_resp_i.r.data   ),
-    .r_resp    ( axi_dv_m_resp_i.r.resp   ),
-    .r_last    ( axi_dv_m_resp_i.r.last   ),
-    .r_user    ( axi_dv_m_resp_i.r.user   ),
-    .r_valid   ( axi_dv_m_resp_i.r_valid  ),
-    .r_ready   ( axi_dv_m_req_o.r_ready   ),
-
-    .aw_data_src2dst        ( marian_axi_s_aw_data_src2dst           ),
-    .aw_rd_data_ptr_dst2src ( marian_axi_s_aw_rd_data_ptr_dst2src    ),
-    .aw_rd_ptr_gray_dst2src ( marian_axi_s_aw_rd_ptr_gray_dst2src    ),
-    .aw_wr_ptr_gray_src2dst ( marian_axi_s_aw_aw_wr_ptr_gray_src2dst ),
-
-    .ar_data_src2dst        ( marian_axi_s_ar_data_src2dst           ),
-    .ar_rd_data_ptr_dst2src ( marian_axi_s_ar_rd_data_ptr_dst2src    ),
-    .ar_rd_ptr_gray_dst2src ( marian_axi_s_ar_rd_ptr_gray_dst2src    ),
-    .ar_wr_ptr_gray_src2dst ( marian_axi_s_ar_wr_ptr_gray_src2dst    ),
-
-    .w_data_src2dst         ( marian_axi_s_w_data_src2dst            ),
-    .w_rd_data_ptr_dst2src  ( marian_axi_s_w_rd_data_ptr_dst2src     ),
-    .w_rd_ptr_gray_dst2src  ( marian_axi_s_w_rd_ptr_gray_dst2src     ),
-    .w_wr_ptr_gray_src2dst  ( marian_axi_s_w_wr_ptr_gray_src2dst     ),
-
-    .r_data_dst2src         ( marian_axi_s_r_data_dst2src            ),
-    .r_rd_data_ptr_src2dst  ( marian_axi_s_r_rd_data_ptr_src2dst     ),
-    .r_rd_ptr_gray_src2dst  ( marian_axi_s_r_rd_ptr_gray_src2dst     ),
-    .r_wr_ptr_gray_dst2src  ( marian_axi_s_r_wr_ptr_gray_dst2src     ),
-
-    .b_data_dst2src         ( marian_axi_s_b_data_dst2src            ),
-    .b_rd_data_ptr_src2dst  ( marian_axi_s_b_rd_data_ptr_src2dst     ),
-    .b_rd_ptr_gray_src2dst  ( marian_axi_s_b_rd_ptr_gray_src2dst     ),
-    .b_wr_ptr_gray_dst2src  ( marian_axi_s_b_wr_ptr_gray_dst2src     )
+  marian_top i_dut (
+    .ext_axi_m_req_i     ( axi_dv_m_req       ),
+    .ext_axi_m_resp_o    ( axi_dv_m_resp      ),
+    .ext_axi_s_req_o     ( axi_dv_s_req       ),
+    .ext_axi_s_resp_i    ( axi_dv_s_resp      ),
+    // Interface: clk
+    .clk_i               ( tb_clk             ),
+    // Interface: gpio
+    .marian_gpio_i       ( gpio_in_s          ),
+    .marian_gpio_o       ( gpio_out_s         ),
+    .marian_gpio_oe      ( /* UNUSED */       ),
+    // Interface: irq_i
+    .marian_ext_irq_i    ( '0                 ),
+    // Interface: irq_o
+    .marian_ext_irq_o    ( /* UNUSED */       ),
+    // Interface: jtag
+    .marian_jtag_tck_i   ( jtag_tck_s         ),
+    .marian_jtag_tms_i   ( jtag_tms_s         ),
+    .marian_jtag_trstn_i ( jtag_trstn_s       ),
+    // Interface: qspi
+    .marian_qspi_data_i  ( marian_qspi_data_i ),
+    .marian_qspi_csn_o   ( marian_qspi_csn_o  ),
+    .marian_qspi_data_o  ( marian_qspi_data_o ),
+    .marian_qspi_oe      ( marian_qspi_oe     ),
+    .marian_qspi_sclk_o  ( marian_qspi_sclk_o ),
+    // Interface: rst_ni
+    .rst_ni              ( tb_rstn            ),
+    // Interface: uart
+    .marian_uart_rx_i    ( uart_rx_s          ),
+    .marian_uart_tx_o    ( uart_tx_s          ),
+    // These ports are not in any interface
+    .marian_jtag_tdi_i   ( jtag_tdi_s         ),
+    .marian_jtag_tdo_o   ( jtag_tdo_s         )
   );
-
-  axi_cdc_split_intf_dst #(
-    .AXI_ID_WIDTH      ( AXI_ID_WIDTH     ),
-    .AXI_ADDR_WIDTH    ( AXI_ADDR_WIDTH   ),
-    .AXI_DATA_WIDTH    ( AXI_DATA_WIDTH   ),
-    .AXI_USER_WIDTH    ( 1                ),
-    .LOG_DEPTH         ( AXI_LOG_DEPTH    ),
-    .AW_DATA_SIZE      ( DST_AW_DATA_SIZE ),
-    .AR_DATA_SIZE      ( DST_AR_DATA_SIZE ),
-    .W_DATA_SIZE       ( DST_W_DATA_SIZE  ),
-    .R_DATA_SIZE       ( DST_R_DATA_SIZE  ),
-    .B_DATA_SIZE       ( DST_B_DATA_SIZE  )
-  ) i_axi_cdc_split_dst (
-    .dst_clk_i   ( tb_clk   ),
-    .dst_rst_ni  ( tb_rstn  ),
-    .icn_rst_ni  ( tb_rstn  ),
-
-    .aw_dst_data ( axi_dv_s_req_i.aw         ),
-    .aw_id       ( axi_dv_s_req_i.aw.id      ),
-    .aw_addr     ( axi_dv_s_req_i.aw.addr    ),
-    .aw_len      ( axi_dv_s_req_i.aw.len     ),
-    .aw_size     ( axi_dv_s_req_i.aw.size    ),
-    .aw_burst    ( axi_dv_s_req_i.aw.burst   ),
-    .aw_lock     ( axi_dv_s_req_i.aw.lock    ),
-    .aw_cache    ( axi_dv_s_req_i.aw.cache   ),
-    .aw_prot     ( axi_dv_s_req_i.aw.prot    ),
-    .aw_qos      ( axi_dv_s_req_i.aw.qos     ),
-    .aw_region   ( axi_dv_s_req_i.aw.region  ),
-    .aw_atop     ( axi_dv_s_req_i.aw.atop    ),
-    .aw_user     ( axi_dv_s_req_i.aw.user    ),
-    .aw_valid    ( axi_dv_s_req_i.aw_valid   ),
-    .aw_ready    ( axi_dv_s_resp_o.aw_ready  ),
-
-    .w_data      ( axi_dv_s_req_i.w.data     ),
-    .w_strb      ( axi_dv_s_req_i.w.strb     ),
-    .w_last      ( axi_dv_s_req_i.w.last     ),
-    .w_user      ( axi_dv_s_req_i.w.user     ),
-    .w_valid     ( axi_dv_s_req_i.w_valid    ),
-    .w_ready     ( axi_dv_s_resp_o.w_ready   ),
-
-    .ar_id       ( axi_dv_s_req_i.ar.id      ),
-    .ar_addr     ( axi_dv_s_req_i.ar.addr    ),
-    .ar_len      ( axi_dv_s_req_i.ar.len     ),
-    .ar_size     ( axi_dv_s_req_i.ar.size    ),
-    .ar_burst    ( axi_dv_s_req_i.ar.burst   ),
-    .ar_lock     ( axi_dv_s_req_i.ar.lock    ),
-    .ar_cache    ( axi_dv_s_req_i.ar.cache   ),
-    .ar_prot     ( axi_dv_s_req_i.ar.prot    ),
-    .ar_qos      ( axi_dv_s_req_i.ar.qos     ),
-    .ar_region   ( axi_dv_s_req_i.ar.region  ),
-    .ar_user     ( axi_dv_s_req_i.ar.user    ),
-    .ar_valid    ( axi_dv_s_req_i.ar_valid   ),
-    .ar_ready    ( axi_dv_s_resp_o.ar_ready  ),
-
-    .r_id        ( axi_dv_s_resp_o.r.id      ),
-    .r_data      ( axi_dv_s_resp_o.r.data    ),
-    .r_resp      ( axi_dv_s_resp_o.r.resp    ),
-    .r_last      ( axi_dv_s_resp_o.r.last    ),
-    .r_user      ( axi_dv_s_resp_o.r.user    ),
-    .r_valid     ( axi_dv_s_resp_o.r_valid   ),
-    .r_ready     ( axi_dv_s_req_i.r_ready    ),
-
-    .b_id        ( axi_dv_s_resp_o.b.id      ),
-    .b_resp      ( axi_dv_s_resp_o.b.resp    ),
-    .b_user      ( axi_dv_s_resp_o.b.user    ),
-    .b_valid     ( axi_dv_s_resp_o.b_valid   ),
-    .b_ready     ( axi_dv_s_req_i.b_ready    ),
-
-    .aw_data_src2dst        ( marian_axi_m_aw_data_src2dst        ),
-    .aw_rd_data_ptr_dst2src ( marian_axi_m_aw_rd_data_ptr_dst2src ),
-    .aw_rd_ptr_gray_dst2src ( marian_axi_m_aw_rd_ptr_gray_dst2src ),
-    .aw_wr_ptr_gray_src2dst ( marian_axi_m_aw_wr_ptr_gray_src2dst ),
-
-    .ar_data_src2dst        ( marian_axi_m_ar_data_src2dst        ),
-    .ar_rd_data_ptr_dst2src ( marian_axi_m_ar_rd_data_ptr_dst2src ),
-    .ar_rd_ptr_gray_dst2src ( marian_axi_m_ar_rd_ptr_gray_dst2src ),
-    .ar_wr_ptr_gray_src2dst ( marian_axi_m_ar_wr_ptr_gray_src2dst ),
-
-    .w_data_src2dst         ( marian_axi_m_w_data_src2dst         ),
-    .w_rd_data_ptr_dst2src  ( marian_axi_m_w_rd_data_ptr_dst2src  ),
-    .w_rd_ptr_gray_dst2src  ( marian_axi_m_w_rd_ptr_gray_dst2src  ),
-    .w_wr_ptr_gray_src2dst  ( marian_axi_m_w_wr_ptr_gray_src2dst  ),
-
-    .r_data_dst2src         ( marian_axi_m_r_data_dst2src         ),
-    .r_rd_data_ptr_src2dst  ( marian_axi_m_r_rd_data_ptr_src2dst  ),
-    .r_rd_ptr_gray_src2dst  ( marian_axi_m_r_rd_ptr_gray_src2dst  ),
-    .r_wr_ptr_gray_dst2src  ( marian_axi_m_r_wr_ptr_gray_dst2src  ),
-
-    .b_data_dst2src         ( marian_axi_m_b_data_dst2src         ),
-    .b_rd_data_ptr_src2dst  ( marian_axi_m_b_rd_data_ptr_src2dst  ),
-    .b_rd_ptr_gray_src2dst  ( marian_axi_m_b_rd_ptr_gray_src2dst  ),
-    .b_wr_ptr_gray_dst2src  ( marian_axi_m_b_wr_ptr_gray_dst2src  )
-  );
-
-  vector_crypto_ss_wrapper_0 i_dut (
-    .vcss_clk_ctrl_i                               ( clk_ctrl_s        ),
-    .vcss_gpio_i                                   ( gpio_in_s         ),
-    .vcss_gpio_o                                   ( gpio_out_s        ),
-    .vcss_gpio_oe_o                                ( /* UNCONNECTED */ ),
-    .vcss_rst_ni                                   ( tb_rstn           ),
-    .vcss_ext_irq_i                                ( '0                ),
-    .vcss_ext_irq_o                                ( /* UNCONNECTED */ ),
-    .vcss_jtag_tck_i                               ( jtag_tck_s        ),
-    .vcss_jtag_tdi_i                               ( jtag_tdi_s        ),
-    .vcss_jtag_tms_i                               ( jtag_tms_s        ),
-    .vcss_jtag_trst_i                              ( jtag_trstn_s      ),
-    .vcss_jtag_tdo_o                               ( jtag_tdo_s        ),
-    .vcss_64b_s_ar_rd_data_ptr_dst2src_o           ( marian_axi_s_ar_rd_data_ptr_dst2src),
-    .vcss_64b_s_ar_rd_ptr_gray_dst2src_o           ( marian_axi_s_ar_rd_ptr_gray_dst2src),
-    .vcss_64b_s_aw_rd_data_ptr_dst2src_o           ( marian_axi_s_aw_rd_data_ptr_dst2src),
-    .vcss_64b_s_aw_rd_ptr_gray_dst2src_o           ( marian_axi_s_aw_rd_ptr_gray_dst2src),
-    .vcss_64b_s_b_data_dst2src_o                   ( marian_axi_s_b_data_dst2src        ),
-    .vcss_64b_s_b_wr_ptr_gray_dst2src_o            ( marian_axi_s_b_wr_ptr_gray_dst2src ),
-    .vcss_64b_s_r_data_dst2src_o                   ( marian_axi_s_r_data_dst2src        ),
-    .vcss_64b_s_r_wr_ptr_gray_dst2src_o            ( marian_axi_s_r_wr_ptr_gray_dst2src ),
-    .vcss_64b_s_w_rd_data_ptr_dst2src_o            ( marian_axi_s_w_rd_data_ptr_dst2src ),
-    .vcss_64b_s_w_rd_ptr_gray_dst2src_o            ( marian_axi_s_w_rd_ptr_gray_dst2src ),
-    .vcss_64b_s_ar_data_src2dst_i                  ( marian_axi_s_ar_data_src2dst       ),
-    .vcss_64b_s_ar_wr_ptr_gray_src2dst_i           ( marian_axi_s_ar_wr_ptr_gray_src2dst),
-    .vcss_64b_s_aw_data_src2dst_i                  ( marian_axi_s_aw_data_src2dst       ),
-    .vcss_64b_s_aw_wr_ptr_gray_src2dst_i           ( marian_axi_s_aw_aw_wr_ptr_gray_src2dst),
-    .vcss_64b_s_b_rd_data_ptr_src2dst_i            ( marian_axi_s_b_rd_data_ptr_src2dst ),
-    .vcss_64b_s_b_rd_ptr_gray_src2dst_i            ( marian_axi_s_b_rd_ptr_gray_src2dst ),
-    .vcss_64b_s_r_rd_data_ptr_src2dst_i            ( marian_axi_s_r_rd_data_ptr_src2dst ),
-    .vcss_64b_s_r_rd_ptr_gray_src2dst_i            ( marian_axi_s_r_rd_ptr_gray_src2dst ),
-    .vcss_64b_s_w_data_src2dst_i                   ( marian_axi_s_w_data_src2dst        ),
-    .vcss_64b_s_w_wr_ptr_gray_src2dst_i            ( marian_axi_s_w_wr_ptr_gray_src2dst ),
-    .vcss_pll_debug_ctrl_i                         ( '0                ),
-    .vcss_pll_div_i                                ( '0                ),
-    .vcss_pll_enable_i                             ( '0                ),
-    .vcss_pll_loop_ctrl_i                          ( '0                ),
-    .vcss_pll_spare_ctrl_i                         ( '0                ),
-    .vcss_pll_tmux_sel_i                           ( '0                ),
-    .vcss_pll_valid_i                              ( '0                ),
-    .vcss_pll_status_1_o                           ( /* UNCONNECTED */ ),
-    .vcss_pll_status_2_o                           ( /* UNCONNECTED */ ),
-    .vcss_qspi_data_i                              ( marian_qspi_data_i),
-    .vcss_qspi_csn_o                               ( marian_qspi_csn_o ),
-    .vcss_qspi_data_o                              ( marian_qspi_data_o),
-    .vcss_qspi_oe_o                                ( marian_qspi_oe    ),
-    .vcss_qspi_sclk_o                              ( marian_qspi_sclk_o),
-    .vcss_refclk_i                                 ( tb_clk            ),
-    .vcss_ref_rst_ni                               ( tb_rstn           ),
-    .vcss_64b_m_ar_data_src2dst_o                  ( marian_axi_m_ar_data_src2dst       ),
-    .vcss_64b_m_ar_wr_ptr_gray_src2dst_o           ( marian_axi_m_ar_wr_ptr_gray_src2dst),
-    .vcss_64b_m_aw_data_src2dst_o                  ( marian_axi_m_aw_data_src2dst       ),
-    .vcss_64b_m_aw_wr_ptr_gray_src2dst_o           ( marian_axi_m_aw_wr_ptr_gray_src2dst),
-    .vcss_64b_m_b_rd_data_ptr_src2dst_o            ( marian_axi_m_b_rd_data_ptr_src2dst ),
-    .vcss_64b_m_b_rd_ptr_gray_src2dst_o            ( marian_axi_m_b_rd_ptr_gray_src2dst ),
-    .vcss_64b_m_r_rd_data_ptr_src2dst_o            ( marian_axi_m_r_rd_data_ptr_src2dst ),
-    .vcss_64b_m_r_rd_ptr_gray_src2dst_o            ( marian_axi_m_r_rd_ptr_gray_src2dst ),
-    .vcss_64b_m_w_data_src2dst_o                   ( marian_axi_m_w_data_src2dst        ),
-    .vcss_64b_m_w_wr_ptr_gray_src2dst_o            ( marian_axi_m_w_wr_ptr_gray_src2dst ),
-    .vcss_64b_m_ar_rd_data_ptr_dst2src_i           ( marian_axi_m_ar_rd_data_ptr_dst2src),
-    .vcss_64b_m_ar_rd_ptr_gray_dst2src_i           ( marian_axi_m_ar_rd_ptr_gray_dst2src),
-    .vcss_64b_m_aw_rd_data_ptr_dst2src_i           ( marian_axi_m_aw_rd_data_ptr_dst2src),
-    .vcss_64b_m_aw_rd_ptr_gray_dst2src_i           ( marian_axi_m_aw_rd_ptr_gray_dst2src),
-    .vcss_64b_m_b_data_dst2src_i                   ( marian_axi_m_b_data_dst2src        ),
-    .vcss_64b_m_b_wr_ptr_gray_dst2src_i            ( marian_axi_m_b_wr_ptr_gray_dst2src ),
-    .vcss_64b_m_r_data_dst2src_i                   ( marian_axi_m_r_data_dst2src        ),
-    .vcss_64b_m_r_wr_ptr_gray_dst2src_i            ( marian_axi_m_r_wr_ptr_gray_dst2src ),
-    .vcss_64b_m_w_rd_data_ptr_dst2src_i            ( marian_axi_m_w_rd_data_ptr_dst2src ),
-    .vcss_64b_m_w_rd_ptr_gray_dst2src_i            ( marian_axi_m_w_rd_ptr_gray_dst2src ),
-    .vcss_uart_rx_i                                ( uart_rx_s         ),
-    .vcss_uart_tx_o                                ( uart_tx_s         )
-  );
-
-
-
 
 /***************************
  * Logic to initialise L2  *
@@ -805,7 +487,7 @@ axi_test::axi_rand_slave #(
       repeat(2)
         @(posedge tb_clk);
 
-      $display("[MARIAN_TB @ %7t] - Writing file %s to i_dut.marian_top.i_bootram.ram...",
+      $display("[MARIAN_TB @ %7t] - Writing file %s to i_dut.i_bootram.ram...",
         $realtime, L2_MEM_INIT_FILE);
 
       // iterate through each word of the memory variable
@@ -821,7 +503,7 @@ axi_test::axi_rand_slave #(
           break; // break if reached uninitialised memory location
         end else begin
           // write word of memory into packed init value of the i_bootram SRAM
-          i_dut.marian_top.i_bootram.ram[word_idx] = mem_init_arr[word_idx];
+          i_dut.i_bootram.ram[word_idx] = mem_init_arr[word_idx];
         end
 
         // check whether RAM is full
@@ -923,7 +605,6 @@ axi_test::axi_rand_slave #(
 
     // set bootram_rdy to 1 to initiate boot from bootRAM
     axi_drv_mst.reset_master();
-    @(posedge i_axi_cdc_split_dst.rstn_sync3); // sync to cdc rst sync3
     #(5*RESET_DELAY_CYCLES*CLOCK_PERIOD);
     axi_write_mst(marian_pkg::CTRLBase + 48 , 1, 9'h1, 1'b0);
     `ifdef EXT_AXI_TEST
@@ -959,10 +640,10 @@ axi_test::axi_rand_slave #(
   /* AXI writes from the VLSU are stored in output file to help verify the
   results when running in ideal dispatcher mode */
 
-  assign ara_axi_w      = i_dut.marian_top.i_system.i_ara.i_vlsu.axi_req.w.data;
-  assign ara_axi_w_strb = i_dut.marian_top.i_system.i_ara.i_vlsu.axi_req.w.strb;
-  assign ara_axi_w_vld  = i_dut.marian_top.i_system.i_ara.i_vlsu.axi_req.w_valid;
-  assign ara_axi_w_rdy  = i_dut.marian_top.i_system.i_ara.i_vlsu.axi_resp.w_ready;
+  assign ara_axi_w      = i_dut.i_system.i_ara.i_vlsu.axi_req.w.data;
+  assign ara_axi_w_strb = i_dut.i_system.i_ara.i_vlsu.axi_req.w.strb;
+  assign ara_axi_w_vld  = i_dut.i_system.i_ara.i_vlsu.axi_req.w_valid;
+  assign ara_axi_w_rdy  = i_dut.i_system.i_ara.i_vlsu.axi_resp.w_ready;
 
   always_ff @(posedge tb_clk) begin
     if (ara_axi_w_vld && ara_axi_w_rdy)
@@ -977,7 +658,7 @@ axi_test::axi_rand_slave #(
  * Logic to Identify Test Completion  *
  **************************************/
 
-  assign exit_s = i_dut.marian_top.exit_s;
+  assign exit_s = i_dut.exit_s;
 
   always @(posedge tb_clk) begin
     if (exit_s[0]) begin

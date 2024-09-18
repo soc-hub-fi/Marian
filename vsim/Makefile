@@ -65,12 +65,6 @@ ARA_INC_DIRS = \
 	+incdir+../ips/pulp_reg_if/include/
 
 LIBS = \
-	-L $(BUILD_DIR)/common_cells_lib \
-	-L $(BUILD_DIR)/axi_lib \
-	-L $(BUILD_DIR)/axi_mem_if_lib \
-	-L $(BUILD_DIR)/pll_lib \
-	-L $(BUILD_DIR)/common_components_lib \
-	-L $(BUILD_DIR)/tech_cells_generic_lib \
 	-L $(BUILD_DIR)/vector_crypto_ss_lib \
 	-L $(BUILD_DIR)/tb_lib
 
@@ -171,19 +165,6 @@ check_env:
 library_mapping: check_env
 	vmap vector_crypto_ss_lib $(BUILD_DIR)/vector_crypto_ss_lib
 	vmap tb_lib $(BUILD_DIR)/tb_lib
-	vmap common_cells_lib $(BUILD_DIR)/common_cells_lib
-	vmap axi_lib $(BUILD_DIR)/axi_lib
-	vmap axi_mem_if_lib $(BUILD_DIR)/axi_mem_if_lib
-	vmap pll_lib $(BUILD_DIR)/pll_lib
-	vmap common_components_lib $(BUILD_DIR)/common_components_lib
-	vmap tech_cells_generic_lib $(BUILD_DIR)/tech_cells_generic_lib
-	vmap vector_crypto_ss_lib $(BUILD_DIR)/vector_crypto_ss_lib
-	vmap tb_lib $(BUILD_DIR)/tb_lib
-
-
-.PHONY: compile_bow_common_lib
-compile_bow_common_lib:
-	$(MAKE) -C ../ips/bow_common_ips/vsim compile BUILD_DIR=$(BUILD_DIR)
 
 
 .PHONY: compile_vector_crypto_ss_lib
@@ -210,7 +191,7 @@ compile_tb_lib:
 
 
 .PHONY: compile
-compile: check_env compile_bow_common_lib compile_vector_crypto_ss_lib compile_tb_lib
+compile: check_env compile_vector_crypto_ss_lib compile_tb_lib
 	@echo "Compilation Complete"
 
 
