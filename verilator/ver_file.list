@@ -59,11 +59,6 @@
 ../ips/bow_common_ips/ips/pulp-common-cells/src/stream_xbar.sv
 ../ips/bow_common_ips/ips/pulp-common-cells/src/unread.sv
 
-# common components
-../ips/bow_common_ips/ips/common-components/src/clock_selector/rtl/clock_selector.sv
-../ips/bow_common_ips/ips/common-components/src/ss_clk_ctrl/rtl/blank_counter.sv
-../ips/bow_common_ips/ips/common-components/src/tico/rtl/tico_generic.sv
-
 # AXI
 ../ips/bow_common_ips/ips/axi/src/axi_atop_filter.sv
 ../ips/bow_common_ips/ips/axi/src/axi_burst_splitter.sv

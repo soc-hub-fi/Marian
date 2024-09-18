@@ -52,3 +52,6 @@
 [submodule "ips/tlp-ss/ips/axi_slice_dc"]
 	path = ips/tlp-ss/ips/axi_slice_dc
 	url = https://github.com/pulp-platform/axi_slice_dc.git
+[submodule "ips/bow_common_ips/ips/axi_mem_if"]
+	path = ips/bow_common_ips/ips/axi_mem_if
+	url = https://github.com/pulp-platform/axi_mem_if.git
