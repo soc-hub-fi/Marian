@@ -33,16 +33,12 @@ The Vector Crypto Subsystem extends v3.0 of the Pulp RISC-V vector processor [Ar
 ### Repo Structure
 
 - **build**: Temporary directory that is created during the HW build flow. Contains logs and temporary artefacts. 
-- **ci**: Artefacts related to Gitlab CI
 - **doc**: Documents/Figures
-- **formal**: Questa Formal tooling scripts
 - **fpga**: FPGA prototyping script + artefacts
 - **ips**: RTL of external IPs used within the projects
-- **ipxact**: IPXACT definitions of IP to be used with Kactus2
 - **scripts**: Helper scripts for simulation
 - **src**: RTL and TB sources specific to this repository
-- **sw**: Software artefacts used for testing 
-- **syn**: Scripts used for Genus LEC and elaboration
+- **sw**: Software artefacts used for testing
 - **verilator**: Artefacts related to Verilator simulation flow
 - **vsim**: Artefacts related to Questa simulation flow
 
