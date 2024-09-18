@@ -278,6 +278,9 @@
 ../ips/pulp_cva6/src/util/instr_tracer.sv
 ../ips/pulp_cva6/src/util/instr_tracer_if.sv
 
+# tico cells (replacing tech-dependent definitions)
+../fpga/hdl/src/tico_generic_fpga.sv
+
 # top
 ../src/ip/marian/marian_top.sv
 
