@@ -24,35 +24,7 @@ SHELL=bash
 ######################################################################
 
 repository_init: 
-	git fetch 
-	git submodule foreach 'git stash' # stash is to avoid override by accident
-	git -c submodule."toolchain/riscv-gnu-toolchain".update=none \
-      -c submodule."toolchain/riscv-isa-sim".update=none \
-      -c submodule."toolchain/verilator".update=none \
-      -c submodule."hardware/deps/apb".update=none \
-      -c submodule."hardware/deps/axi".update=none \
-      -c submodule."hardware/deps/common_cells".update=none \
-      -c submodule."hardware/deps/tech_cells_generic".update=none \
-      -c submodule."hardware/deps/common_verification".update=none \
-      -c submodule."hardware/deps/cva6".update=none \
-      -c submodule."toolchain/newlib".update=none \
-      -c submodule."toolchain/riscv-llvm".update=none \
-      -c submodule."src/axi".update=none \
-      -c submodule."src/axi_node".update=none \
-      -c submodule."src/axi_riscv_atomics".update=none \
-      -c submodule."src/clint".update=none \
-      -c submodule."src/common_cells".update=none \
-      -c submodule."src/fpga-support".update=none \
-      -c submodule."src/riscv_dbg".update=none \
-      -c submodule."src/rv_plic".update=none \
-      -c submodule."src/tech_cells_generic".update=none \
-      -c submodule."fpga/src/apb_uart".update=none \
-      -c submodule."fpga/src/apb_node".update=none \
-      -c submodule."fpga/src/axi2apb".update=none \
-      -c submodule."fpga/src/axi_slice".update=none \
-      -c submodule."fpga/src/ariane-ethernet".update=none \
-      -c submodule."fpga/src/apb_timer".update=none \
-      submodule update --init --recursive # exclude large and unnecessary submodules to save time
+	@echo "Bender test"
 
 .PHONY: check-env
 check-env:
