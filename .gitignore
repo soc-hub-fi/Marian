@@ -4,6 +4,8 @@ work/
 .visualizer/
 modelsim.ini
 build/
+Bender.lock
+.bender/
 *.vstf
 *.wlf
 **/transcript

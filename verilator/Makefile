@@ -29,6 +29,9 @@ endif
 TOP_MODULE ?= marian_tb_verilator
 VERIL_TOP  ?= $(VERIL_DIR)/$(TOP_MODULE).cpp
 
+# Bender-specific
+FILELIST = $(shell bender script flist)
+
 # Load L2 using readmem
 L2_INIT_METHOD := FILE
 
@@ -97,7 +100,7 @@ TB_SRC_LIST  ?= $(SRC_DIR)/tb-v-hdl-files.list
 
 
 VERIL_FLAGS ?= \
-	-f $(VERIL_DIR)/ver_file.list \
+	$(FILELIST) \
 	$(VERIL_DEFINES) \
 	$(VERIL_INCLUDES) \
 	$(VERIL_PARAMS) \

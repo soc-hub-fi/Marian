@@ -124,12 +124,19 @@ CI_result_check:
 # clean targets
 ######################################################################
 
-.PHONY: clean
-clean:
+.PHONY: clean_build
+clean_build:
 	rm -rf build
 
 .PHONY: clean_sw
 clean_sw:
 	$(MAKE) -C sw clean_all
+
+.PHONY: clean_ips
+clean_ips:
+	rm -fr .bender
+
+.PHONY: clean_all
+clean_all: clean_build clean_sw clean_ips
 
 

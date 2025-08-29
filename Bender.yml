@@ -1,0 +1,21 @@
+# A more detailed description of the manifest format `Bender.yml` can be found here:
+# https://github.com/pulp-platform/bender#manifest-format-benderyml
+
+package:
+  name: marian
+  authors:
+    - "Tom Szymkowiak <thomas.szymkowiak@tuni.fi>"
+    - "Antti Nurmi <antti.nurmi@tuni.fi>"
+
+dependencies:
+  apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4  }
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.35.3 }
+
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+  # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+  # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+  # Level 0
+  # Level N
+  files:
+    - src/ip/marian/marian_top.sv
