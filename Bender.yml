@@ -8,14 +8,16 @@ package:
     - "Antti Nurmi <antti.nurmi@tuni.fi>"
 
 dependencies:
-  apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4  }
-  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.35.3 }
+  apb:                { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4  }
+  axi:                { git: "https://github.com/pulp-platform/axi.git", version: 0.35.3 }
+  register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.1 }
 
 sources:
+  files:
   # Source files grouped in levels. Files in level 0 have no dependencies on files in this
   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
   # levels 1 and 0, etc. Files within a level are ordered alphabetically.
   # Level 0
+    - src/ip/include/marian_pkg.sv
   # Level N
-  files:
     - src/ip/marian/marian_top.sv

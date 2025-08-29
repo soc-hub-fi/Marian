@@ -30,7 +30,15 @@ TOP_MODULE ?= marian_tb_verilator
 VERIL_TOP  ?= $(VERIL_DIR)/$(TOP_MODULE).cpp
 
 # Bender-specific
-FILELIST = $(shell bender script flist)
+BENDER_TARGETS = \
+	-t tech_cells_generic_exclude_deprecated
+
+FILELIST = $(shell bender script flist $(BENDER_TARGETS))
+
+APB_PATH          = $(shell bender path apb)
+AXI_PATH          = $(shell bender path axi)
+COMMON_CELLS_PATH = $(shell bender path common_cells)
+REG_INTF_PATH     = $(shell bender path register_interface)
 
 # Load L2 using readmem
 L2_INIT_METHOD := FILE
@@ -89,11 +97,10 @@ VERIL_DEFINES += \
 endif
 
 VERIL_INCLUDES ?= \
-  +incdir+../ips/pulp_apb/include/ \
-  +incdir+../ips/bow_common_ips/ips/axi/include/ \
-  +incdir+../ips/bow_common_ips/ips/pulp-common-cells/include/ \
-  +incdir+../ips/pulp_ara/hardware/include/ \
-	+incdir+../ips/pulp_reg_if/include/
+  +incdir+$(APB_PATH)/include \
+  +incdir+$(AXI_PATH)/include \
+  +incdir+$(COMMON_CELLS_PATH)/include \
+  +incdir+$(REG_INTF_PATH)/include
 
 RTL_SRC_LIST ?= $(SRC_DIR)/vector_crypto_ss-v-hdl-files.list
 TB_SRC_LIST  ?= $(SRC_DIR)/tb-v-hdl-files.list
