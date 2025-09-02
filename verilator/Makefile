@@ -31,7 +31,8 @@ VERIL_TOP  ?= $(VERIL_DIR)/$(TOP_MODULE).cpp
 
 # Bender-specific
 BENDER_TARGETS = \
-	-t tech_cells_generic_exclude_deprecated
+	-t tech_cells_generic_exclude_deprecated \
+	-t tech_cells_generic_exclude_tc_sram
 
 FILELIST = $(shell bender script flist $(BENDER_TARGETS))
 
@@ -39,6 +40,7 @@ APB_PATH          = $(shell bender path apb)
 AXI_PATH          = $(shell bender path axi)
 COMMON_CELLS_PATH = $(shell bender path common_cells)
 REG_INTF_PATH     = $(shell bender path register_interface)
+ARA_PATH          = $(SRC_DIR)/vendor/ara
 
 # Load L2 using readmem
 L2_INIT_METHOD := FILE
@@ -99,6 +101,7 @@ endif
 VERIL_INCLUDES ?= \
   +incdir+$(APB_PATH)/include \
   +incdir+$(AXI_PATH)/include \
+  +incdir+$(ARA_PATH)/hardware/include \
   +incdir+$(COMMON_CELLS_PATH)/include \
   +incdir+$(REG_INTF_PATH)/include
 

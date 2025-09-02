@@ -7,6 +7,11 @@ hier_block -module "lane"
 // check for those right away
 lint_off -rule DECLFILENAME -file "*" -match "*lane*"
 
+// needed because of this Ara version 
+lint_off -rule MODDUP -file "*/ara/*/axi_to_mem.sv" -match "*"
+
+lint_off -rule PINMISSING -file "*/debug_system.sv" -match "*"
+
 // Ignore missing pins on Ariane
 lint_off -rule PINMISSING -file "*/pulp_cva6/*" -match "*"
 

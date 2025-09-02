@@ -6,6 +6,7 @@ modelsim.ini
 build/
 Bender.lock
 .bender/
+src/vendor
 *.vstf
 *.wlf
 **/transcript

@@ -23,8 +23,9 @@ SHELL=bash
 # Repository targets
 ######################################################################
 
-repository_init: 
-	@echo "Bender test"
+repository_init:
+	bender update
+	bender vendor init
 
 .PHONY: check-env
 check-env:
@@ -135,6 +136,7 @@ clean_sw:
 .PHONY: clean_ips
 clean_ips:
 	rm -fr .bender
+	rm -fr src/vendor
 
 .PHONY: clean_all
 clean_all: clean_build clean_sw clean_ips

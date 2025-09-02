@@ -9,7 +9,13 @@ package:
 
 dependencies:
   apb:                { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4  }
+  apb_gpio:           { git: "https://github.com/pulp-platform/apb_gpio.git", rev: master }
+  apb_node:           { git: "https://github.com/pulp-platform/apb_node", version: 0.1.0 }
+  apb_timer:          { git: "https://github.com/pulp-platform/apb_timer.git", version: 0.1.0 }
+  #ara:                { git: "https://github.com/pulp-platform/ara", rev: "ec0e37916b901961beab3974acc44ab5ea422db6" } # v3.0
   axi:                { git: "https://github.com/pulp-platform/axi.git", version: 0.35.3 }
+  FPnew:              { git: "https://github.com/pulp-platform/fpnew.git",    rev: "8d4794d601c8dcea46c04fed51b05923fa1e94d5"}
+  riscv-dbg:          { git: "https://github.com/pulp-platform/riscv-dbg.git", version: 0.8.1 }
   register_interface: { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.1 }
 
 sources:
@@ -18,6 +24,254 @@ sources:
   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
   # levels 1 and 0, etc. Files within a level are ordered alphabetically.
   # Level 0
+    - src/ip/include/riscv_pkg.sv
+    - src/ip/include/rvv_pkg.sv
+
+    - src/vendor/cva6/include/ariane_pkg.sv
+    - src/vendor/cva6/include/ariane_axi_pkg.sv
+    - src/vendor/cva6/include/std_cache_pkg.sv
+    - src/vendor/cva6/include/wt_cache_pkg.sv
+    - src/vendor/cva6/include/ariane_axi_pkg.sv
+    - src/vendor/cva6/src/clint/axi_lite_interface.sv
+    - src/vendor/cva6/src/axi_adapter.sv
+    - src/vendor/cva6/tb/common/uart.sv
+    - src/vendor/cva6/tb/common/mock_uart.sv
+    - src/vendor/cva6/src/util/instr_tracer.sv
+    - src/vendor/cva6/src/util/instr_tracer_if.sv
+    - src/vendor/cva6/src/frontend/instr_queue.sv
+    - src/vendor/cva6/src/frontend/instr_scan.sv
+    - src/vendor/cva6/src/frontend/btb.sv
+    - src/vendor/cva6/src/frontend/bht.sv
+    - src/vendor/cva6/src/frontend/ras.sv
+    - src/vendor/cva6/src/frontend/frontend.sv
+    - src/vendor/cva6/src/cache_subsystem/cva6_icache.sv
+    - src/vendor/cva6/src/cache_subsystem/wt_axi_adapter.sv
+    - src/vendor/cva6/src/cache_subsystem/wt_cache_subsystem.sv
+    - src/vendor/cva6/src/cache_subsystem/wt_dcache.sv
+    - src/vendor/cva6/src/cache_subsystem/wt_dcache_ctrl.sv
+    - src/vendor/cva6/src/cache_subsystem/wt_dcache_mem.sv
+    - src/vendor/cva6/src/cache_subsystem/wt_dcache_missunit.sv
+    - src/vendor/cva6/src/cache_subsystem/wt_dcache_wbuffer.sv
+    - src/vendor/cva6/src/ex_stage.sv
+    - src/vendor/cva6/src/decoder.sv
+    - src/vendor/cva6/src/scoreboard.sv
+    - src/vendor/cva6/src/compressed_decoder.sv
+    - src/vendor/cva6/src/instr_realign.sv
+    - src/vendor/cva6/src/amo_buffer.sv
+    - src/vendor/cva6/src/commit_stage.sv
+    - src/vendor/cva6/src/fpu_wrap.sv
+    - src/vendor/cva6/src/ariane_regfile_ff.sv
+    - src/vendor/cva6/src/issue_read_operands.sv
+    - src/vendor/cva6/src/issue_stage.sv
+    - src/vendor/cva6/src/re_name.sv
+    - src/vendor/cva6/src/perf_counters.sv
+    - src/vendor/cva6/src/csr_regfile.sv
+    - src/vendor/cva6/src/csr_buffer.sv
+    - src/vendor/cva6/src/controller.sv
+    - src/vendor/cva6/src/id_stage.sv
+    - src/vendor/cva6/src/mult.sv
+    - src/vendor/cva6/src/pmp/src/pmp.sv
+    - src/vendor/cva6/src/mmu.sv
+    - src/vendor/cva6/src/ptw.sv
+    - src/vendor/cva6/src/acc_dispatcher.sv
+    - src/vendor/cva6/src/multiplier.sv
+    - src/vendor/cva6/src/load_store_unit.sv
+    - src/vendor/cva6/src/load_unit.sv
+    - src/vendor/cva6/src/store_unit.sv
+    - src/vendor/cva6/src/store_buffer.sv
+    - src/vendor/cva6/src/serdiv.sv
+    - src/vendor/cva6/src/alu.sv
+    - src/vendor/cva6/src/tlb.sv
+    - src/vendor/cva6/src/branch_unit.sv
+    - src/vendor/cva6/src/ariane.sv
+    
+    - src/ip/include/ara_pkg.sv
     - src/ip/include/marian_pkg.sv
+    - src/tb/include/marian_tb_pkg.sv
+    - src/ip/marian/sram.sv
+    - src/ip/marian/tc_sram.sv
+
+    - src/vendor/ara/hardware/src/axi_inval_filter.sv
+    - src/vendor/ara/hardware/src/axi_to_mem.sv
+    - src/vendor/ara/hardware/src/lane/fixed_p_rounding.sv
+    - src/vendor/ara/hardware/src/lane/operand_queue.sv
+    - src/vendor/ara/hardware/src/lane/power_gating_generic.sv
+    - src/vendor/ara/hardware/src/lane/simd_div.sv
+    - src/vendor/ara/hardware/src/lane/vector_fus_stage.sv
+    - src/vendor/ara/hardware/src/lane/vector_regfile.sv
+    - src/vendor/ara/hardware/src/lane/vmfpu.sv
+    - src/vendor/ara/hardware/src/masku/masku.sv
+    - src/vendor/ara/hardware/src/sldu/p2_stride_gen.sv
+    - src/vendor/ara/hardware/src/sldu/sldu.sv
+    - src/vendor/ara/hardware/src/sldu/sldu_op_dp.sv
+    - src/vendor/ara/hardware/src/vlsu/addrgen.sv
+    - src/vendor/ara/hardware/src/vlsu/vldu.sv
+    - src/vendor/ara/hardware/src/vlsu/vstu.sv
+
+    - src/vendor/pulp_axi_mem_if/src/axi2mem.sv
+
+  # TODO: target to FPGA?
+    - fpga/hdl/src/tico_generic_fpga.sv
+
+    - src/vendor/axi_spi_master/spi_master_rx.sv
+    - src/vendor/axi_spi_master/spi_master_tx.sv
+    - src/vendor/axi_spi_master/spi_master_fifo.sv
+    - src/vendor/axi_spi_master/spi_master_clkgen.sv
+    - src/vendor/axi_spi_master/spi_master_controller.sv
+    - src/vendor/apb_spi_master/spi_master_apb_if.sv
+    - src/vendor/apb_spi_master/apb_spi_master.sv
+
+    - src/vendor/pulp_rv_plic/rtl/plic_top.sv
+    - src/vendor/pulp_rv_plic/rtl/rv_plic_gateway.sv
+    - src/vendor/pulp_rv_plic/rtl/rv_plic_target.sv
+
   # Level N
+    - src/ip/marian/bootrom/boot_rom.sv
+    - src/ip/marian/ariane/axi_shim.sv
+    - src/ip/marian/ariane/cva6_accel_first_pass_decoder.sv
+    - src/ip/marian/lane/lane.sv
+    - src/ip/marian/lane/operand_requester.sv
+    - src/ip/marian/lane/lane_sequencer.sv
+    - src/ip/marian/lane/operand_queues_stage.sv
+    - src/ip/marian/lane/simd_alu.sv
+    - src/ip/marian/lane/simd_mul.sv
+    - src/ip/marian/lane/valu.sv
+    - src/ip/marian/lane/vlsu.sv
+    - src/ip/marian/bootrom/bootrom_if.sv
+    - src/ip/marian/apb_peripherals.sv
+    - src/ip/marian/clint/clint.sv
+    - src/ip/marian/clint/clint_wrapper.sv
+    - src/ip/marian/plic/plic_regmap.sv
+    - src/ip/marian/plic/plic_wrapper.sv
+    - src/ip/marian/ara.sv
+    - src/ip/marian/ara_dispatcher.sv
+    - src/ip/marian/ara_sequencer.sv
+    - src/ip/marian/ara_system.sv
+    - src/ip/marian/rtc_generator.sv
+    - src/ip/marian/debug_system.sv
+    - src/ip/marian/ctrl_registers.sv
+    - src/ip/marian/peripherals.sv
     - src/ip/marian/marian_top.sv
+    - src/tb/marian_tb_verilator.sv
+
+
+vendor_package:
+
+  # vendor package because this CVA6/Ariane version is old and contains common cells locally,
+  # causing module duplication (MODDUP) warnings.
+  - name: ariane
+    target_dir: src/vendor/cva6
+    upstream: { git: "https://github.com/pulp-platform/cva6", rev: "bebbc1475f9ffba661e8354d8773e27ab9338db1" }
+    include_from_upstream:
+      - include/ariane_pkg.sv
+      - include/ariane_axi_pkg.sv
+      - include/std_cache_pkg.sv
+      - include/wt_cache_pkg.sv
+      - include/ariane_axi_pkg.sv
+      - src/clint/axi_lite_interface.sv
+      - src/axi_adapter.sv
+      - tb/common/uart.sv
+      - tb/common/mock_uart.sv
+      - src/util/instr_tracer.sv
+      - src/util/instr_tracer_if.sv
+      - src/frontend/instr_queue.sv
+      - src/frontend/instr_scan.sv
+      - src/frontend/ras.sv
+      - src/frontend/frontend.sv
+      - src/frontend/btb.sv
+      - src/frontend/bht.sv
+      - src/cache_subsystem/cva6_icache.sv
+      - src/cache_subsystem/wt_axi_adapter.sv
+      - src/cache_subsystem/wt_cache_subsystem.sv
+      - src/cache_subsystem/wt_dcache.sv
+      - src/cache_subsystem/wt_dcache_ctrl.sv
+      - src/cache_subsystem/wt_dcache_mem.sv
+      - src/cache_subsystem/wt_dcache_missunit.sv
+      - src/cache_subsystem/wt_dcache_wbuffer.sv
+      - src/issue_read_operands.sv
+      - src/decoder.sv
+      - src/compressed_decoder.sv
+      - src/issue_stage.sv
+      - src/scoreboard.sv
+      - src/commit_stage.sv
+      - src/ariane_regfile_ff.sv
+      - src/branch_unit.sv
+      - src/instr_realign.sv
+      - src/csr_regfile.sv
+      - src/csr_buffer.sv
+      - src/fpu_wrap.sv
+      - src/perf_counters.sv
+      - src/amo_buffer.sv
+      - src/acc_dispatcher.sv
+      - src/pmp/src/pmp.sv
+      - src/mult.sv
+      - src/re_name.sv
+      - src/ptw.sv
+      - src/mmu.sv
+      - src/controller.sv
+      - src/id_stage.sv
+      - src/multiplier.sv
+      - src/ex_stage.sv
+      - src/load_store_unit.sv
+      - src/load_unit.sv
+      - src/store_unit.sv
+      - src/store_buffer.sv
+      - src/serdiv.sv
+      - src/tlb.sv
+      - src/alu.sv
+      - src/ariane.sv
+
+  - name: ara
+    target_dir: src/vendor/ara
+    upstream:  { git: "https://github.com/pulp-platform/ara", rev: "ec0e37916b901961beab3974acc44ab5ea422db6" } # v3.0
+    include_from_upstream:
+      - hardware/include/ara/ara.svh
+      - hardware/src/axi_inval_filter.sv
+      - hardware/src/axi_to_mem.sv
+      - hardware/src/lane/fixed_p_rounding.sv
+      - hardware/src/lane/operand_queue.sv
+      - hardware/src/lane/power_gating_generic.sv
+      - hardware/src/lane/simd_div.sv
+      - hardware/src/lane/vector_fus_stage.sv
+      - hardware/src/lane/vector_regfile.sv
+      - hardware/src/lane/vmfpu.sv
+      - hardware/src/masku/masku.sv
+      - hardware/src/sldu/p2_stride_gen.sv
+      - hardware/src/sldu/sldu.sv
+      - hardware/src/sldu/sldu_op_dp.sv
+      - hardware/src/vlsu/addrgen.sv
+      - hardware/src/vlsu/vldu.sv
+      - hardware/src/vlsu/vstu.sv
+
+  
+  - name: apb_spi_master
+    target_dir: src/vendor/apb_spi_master
+    upstream: { git: "https://github.com/pulp-platform/apb_spi_master.git", rev: "3fce81084b15870f4bd9da7806cf950774f9672e" }
+    include_from_upstream:
+      - apb_spi_master.sv
+      - spi_master_apb_if.sv
+
+
+  - name: axi_spi_master
+    target_dir: src/vendor/axi_spi_master
+    upstream: { git: "https://github.com/pulp-platform/axi_spi_master.git", rev: "ee219078353a76e468674c25675f5b7fe5f51127" }
+    include_from_upstream:
+      - spi_master_fifo.sv
+      - spi_master_tx.sv
+      - spi_master_rx.sv
+      - spi_master_controller.sv
+      - spi_master_clkgen.sv
+
+  - name: rv_plic
+    target_dir: src/vendor/pulp_rv_plic
+    upstream: { git: "https://github.com/pulp-platform/rv_plic.git", rev: "5b5c5a4c1c15c3d7bb833071d344b2c2bc5f599d" }
+    include_from_upstream:
+      - rtl/plic_top.sv
+      - rtl/rv_plic_gateway.sv
+      - rtl/rv_plic_target.sv
+
+  - name: pulp_axi_mem_if
+    target_dir: src/vendor/pulp_axi_mem_if
+    upstream: { git: "https://github.com/pulp-platform/axi_mem_if.git", rev: "b494701501886ad71ba0c128560cc371610bcf1a" }
+    include_from_upstream:
+      - src/axi2mem.sv

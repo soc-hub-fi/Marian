@@ -1,2 +1,3 @@
 overrides:
+   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.4 }
    axi: { git: https://github.com/pulp-platform/axi.git , version: 0.35.3 }
