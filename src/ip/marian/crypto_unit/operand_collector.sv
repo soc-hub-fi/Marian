@@ -315,7 +315,7 @@ for(operand = 0; operand < NumOperands; operand++) begin : gen_operand_logic
           if (&crypto_operand_valid_trans_s[operand]) begin
 
             // get value of current operand byte
-            curr_operand_byte_idx_s = get_operand_idx(vstart_byte_s, operand_bytes_read_q);
+            curr_operand_byte_idx_s = get_operand_idx(vector_scalar_op_s ? '0 : vstart_byte_s, operand_bytes_read_q);
 
             // set low pointer for arg buffer
             arg_idx_lo_s = curr_arg_byte_idx_q;
